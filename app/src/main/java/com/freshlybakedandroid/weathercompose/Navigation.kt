@@ -21,7 +21,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.freshlybakedandroid.weathercompose.Destinations.SETTING_ROUTE
+import com.freshlybakedandroid.weathercompose.Destinations.WEATHER_ROUTE
 import com.freshlybakedandroid.weathercompose.Destinations.WELCOME_ROUTE
+import com.freshlybakedandroid.weathercompose.weather.WeatherScreen
+import com.freshlybakedandroid.weathercompose.welcome.WelcomeScreen
 
 object Destinations {
     const val WELCOME_ROUTE = "welcome"
@@ -33,13 +37,19 @@ object Destinations {
 fun WeatherNavHost(
     navController: NavHostController = rememberNavController(),
 ) {
-    NavHost(
-        navController = navController,
-        startDestination = WELCOME_ROUTE,
-    ) {
+    NavHost(navController = navController, startDestination = WELCOME_ROUTE) {
         composable(WELCOME_ROUTE) {
-
+            WelcomeScreen {
+                navController.navigate(WEATHER_ROUTE) {
+                    popUpTo(WELCOME_ROUTE) { inclusive = true }
+                }
+            }
         }
-
+        composable(WEATHER_ROUTE) {
+            WeatherScreen()
+        }
+        composable(SETTING_ROUTE) {
+            WeatherScreen()
+        }
     }
 }
