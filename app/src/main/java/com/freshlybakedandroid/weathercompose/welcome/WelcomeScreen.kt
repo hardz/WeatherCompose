@@ -35,6 +35,7 @@ private const val SplashWaitTime: Long = 3000
 
 @Composable
 fun WelcomeScreen(onTimeout: () -> Unit) {
+
     Box(
         modifier = Modifier
             .fillMaxSize()
