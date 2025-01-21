@@ -3,7 +3,6 @@ package com.freshlybakedandroid.weathercompose.network
 import com.freshlybakedandroid.weathercompose.BuildConfig
 import com.freshlybakedandroid.weathercompose.model.ForecastResponse
 import com.freshlybakedandroid.weathercompose.model.WeatherResponse
-import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query

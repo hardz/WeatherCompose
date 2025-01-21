@@ -12,6 +12,8 @@ import com.freshlybakedandroid.weathercompose.model.SunriseSunset
 import com.freshlybakedandroid.weathercompose.model.WeatherHeaderData
 import com.freshlybakedandroid.weathercompose.model.WeatherMainData
 import com.freshlybakedandroid.weathercompose.model.WeatherResponse
+import com.freshlybakedandroid.weathercompose.utill.TemperatureUnit
+import com.freshlybakedandroid.weathercompose.utill.convertTemperature
 import com.freshlybakedandroid.weathercompose.utill.extractDate
 import com.freshlybakedandroid.weathercompose.utill.getFormattedDate
 import com.freshlybakedandroid.weathercompose.utill.getWeatherIconURL
@@ -55,6 +57,7 @@ class WeatherViewModel @Inject constructor(
 
             if (weatherResult.isSuccessful && forecastResult.isSuccessful) {
                 weatherResult.body()?.let { weather ->
+                    Log.e("DEBUG", "${weather.toString()}")
                     _weatherMainData.value = mapToWeatherMainData(weather)
                     _weatherHeaderData.value = mapToWeatherHeaderData(weather)
                     _currentConditions.value = mapToCurrentConditions(weather)
@@ -81,7 +84,7 @@ class WeatherViewModel @Inject constructor(
             weatherDescription = weatherResponse.weather.firstOrNull()?.description ?: "Unknown",
             dayLowTemp = "Low: ${weatherResponse.main.tempMin}",
             dayHighTemp = "High: ${weatherResponse.main.tempMax}",
-            currentTemp = weatherResponse.main.temp.toString(),
+            currentTemp = weatherResponse.main.temp.convertTemperature(TemperatureUnit.KELVIN), //Kelvin
             feelsLikeTemp = weatherResponse.main.feelsLike.toString(),
             weatherTypeIcon = weatherResponse.weather.firstOrNull()?.icon ?: ""
         )

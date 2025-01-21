@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -37,6 +38,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,6 +58,7 @@ import com.freshlybakedandroid.weathercompose.model.SunriseSunset
 import com.freshlybakedandroid.weathercompose.model.WeatherHeaderData
 import com.freshlybakedandroid.weathercompose.model.WeatherMainData
 import com.freshlybakedandroid.weathercompose.ui.theme.WeatherComposeTheme
+import com.freshlybakedandroid.weathercompose.utill.TemperatureUnitManager
 
 
 @Composable
@@ -73,7 +76,9 @@ fun WeatherScreen(
 
     LaunchedEffect(Unit) {
         //TODO() : Make unit dynamic with state
-        viewModel.getWeatherAndForecast("22.2782303", "73.1813446", "metric")
+        val unit = TemperatureUnitManager.getUnit().toString()
+        Log.e("DEBUG", "----- unittt  $unit")
+        viewModel.getWeatherAndForecast("22.2782303", "73.1813446", TemperatureUnitManager.getUnit().toString()) //default, metric, imperial
 //        viewModel.getWeatherByGeoCode("37.7749", "-122.4194", "metric") // Example lat/lon for San Francisco
     }
 
@@ -84,18 +89,22 @@ fun WeatherScreen(
         }
         is WeatherUiState.Success -> {
             Log.e("DEBUG", "--- Success --- ${weatherMainData?.weatherType}")
-            Surface(modifier, color = MaterialTheme.colorScheme.background) {
-                Column(modifier = Modifier
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState())) {
-                    Header(weatherHeaderData!!)
-                    WeatherMainDetails(weatherMainData!!)
-                    CurrentConditions(currentConditionsData!!)
-                    SevenDaysForeCast(daysForeCastData!!)
-                    SunriseSunset(sunriseSunsetData!!)
-                    Footer()
+            Scaffold { innerPadding ->
+                Surface(modifier.padding(innerPadding), color = MaterialTheme.colorScheme.background) {
+                    Column(modifier = Modifier
+                        .padding(24.dp)
+                        .verticalScroll(rememberScrollState())) {
+                        Header(weatherHeaderData!!)
+                        Spacer()
+                        WeatherMainDetails(weatherMainData!!)
+                        CurrentConditions(currentConditionsData!!)
+                        SevenDaysForeCast(daysForeCastData!!)
+                        SunriseSunset(sunriseSunsetData!!)
+                        Footer()
+                    }
                 }
             }
+
         }
         is WeatherUiState.Error -> {
             Log.e("DEBUG", "--- Error")
@@ -108,6 +117,11 @@ fun WeatherScreen(
 }
 
 @Composable
+fun Spacer() {
+    Spacer(modifier = Modifier.height(16.dp))
+}
+
+@Composable
 fun Loader() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         CircularProgressIndicator(
@@ -116,7 +130,6 @@ fun Loader() {
             strokeWidth = 4.dp
         )
     }
-
 }
 
 @Composable
@@ -130,20 +143,17 @@ fun Header(weatherHeaderData: WeatherHeaderData) {
 
         Icon(
             Icons.Rounded.Settings, contentDescription = "setting",
-            Modifier
-                .clickable {
-                    Log.e("DEBUG", "Testing Icon Click")
-                })
+            Modifier.clickable { Log.e("DEBUG", "Testing Icon Click") }
+        )
     }
 }
 
 @Composable
 fun WeatherMainDetails(weatherMainData: WeatherMainData) {
     ElevatedCard(
-        modifier = Modifier.padding(0.dp,10.dp,0.dp,0.dp)
+        modifier = Modifier
             .fillMaxWidth()
     ) {
-
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.Start) {
                 Text(text = weatherMainData.currentTemp, style = MaterialTheme.typography.displayMedium)
@@ -168,18 +178,23 @@ fun WeatherMainDetails(weatherMainData: WeatherMainData) {
 @Composable
 fun CurrentConditions(currentConditionsData: CurrentConditions) {
     SectionLabel("Current Condition")
-    Row(
+    ElevatedCard(
         modifier = Modifier
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+            .fillMaxWidth()
     ) {
-        ConditionDetails(
-            currentConditionsData.wind, currentConditionsData.windSpeed, modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start
-        )
-        Spacer(Modifier.width(16.dp))
-        ConditionDetails(
-            currentConditionsData.humidity, currentConditionsData.humidityPercentage, modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth().padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ConditionDetails(
+                currentConditionsData.wind, currentConditionsData.windSpeed, modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start
+            )
+            Spacer()
+            ConditionDetails(
+                currentConditionsData.humidity, currentConditionsData.humidityPercentage, modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End
+            )
+        }
     }
 }
 
@@ -204,7 +219,7 @@ fun SectionLabel(label: String) {
     Text(
         text = label,
         style = MaterialTheme.typography.titleMedium,
-        modifier = Modifier.padding(vertical = 16.dp)
+        modifier = Modifier.padding(0.dp, 24.dp, 0.dp, 8.dp)
     )
 }
 
@@ -220,9 +235,15 @@ fun BodyText(label: String, modifier: Modifier) {
 @Composable
 fun SevenDaysForeCast(daysForeCastData: List<DaysForeCast>) {
     SectionLabel("7-day forecast")
-    for (daysForeCast in daysForeCastData) {
-        DaysForeCast(daysForeCast)
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        for (daysForeCast in daysForeCastData) {
+            DaysForeCast(daysForeCast)
+        }
     }
+
 }
 
 @Composable
@@ -230,7 +251,7 @@ fun DaysForeCast(daysForeCast: DaysForeCast) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 4.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         BodyText(daysForeCast.day, modifier = Modifier.weight(.4f))
@@ -240,8 +261,14 @@ fun DaysForeCast(daysForeCast: DaysForeCast) {
                 contentDescription = "cloudweather",
                 modifier = Modifier.size(32.dp)
             )
-            BodyText(daysForeCast.expectedTemp, Modifier.padding(start = 8.dp).weight(1f))
-            BodyText(daysForeCast.weatherType, Modifier.padding(start = 8.dp).weight(1f))
+            BodyText(daysForeCast.expectedTemp,
+                Modifier
+                    .padding(start = 8.dp)
+                    .weight(1f))
+            BodyText(daysForeCast.weatherType,
+                Modifier
+                    .padding(start = 8.dp)
+                    .weight(1f))
         }
     }
 }
@@ -249,24 +276,33 @@ fun DaysForeCast(daysForeCast: DaysForeCast) {
 @Composable
 fun SunriseSunset(sunriseSunsetData: SunriseSunset) {
     SectionLabel("Sunrise & sunset")
-    Row(
+    ElevatedCard(
         modifier = Modifier
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+            .fillMaxWidth()
     ) {
-        ConditionDetails(
-            sunriseSunsetData.sunrise, sunriseSunsetData.sunriseTime, modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start
-        )
-        Spacer(Modifier.width(16.dp))
-        ConditionDetails(
-            sunriseSunsetData.sunset, sunriseSunsetData.sunsetTime, modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth().padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ConditionDetails(
+                sunriseSunsetData.sunrise, sunriseSunsetData.sunriseTime, modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start
+            )
+            Spacer()
+            ConditionDetails(
+                sunriseSunsetData.sunset, sunriseSunsetData.sunsetTime, modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End
+            )
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun Footer() {
+
+    Spacer()
+    Spacer()
+
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
         Text(text = "Current Weather", style = MaterialTheme.typography.titleSmall)
         Text(text = "Powered By OpenWeatherMap API", style = MaterialTheme.typography.titleSmall)

@@ -24,6 +24,15 @@ fun Double.round(): String {
     return kotlin.math.round(this).toString()
 }
 
+fun Double.convertTemperature(unit: TemperatureUnit): String {
+    return when (unit) {
+        TemperatureUnit.KELVIN -> "${this.toInt()} K"
+        TemperatureUnit.CELSIUS -> "${(this - 273.15).toInt()} °C"
+        TemperatureUnit.FAHRENHEIT -> "${((this - 273.15) * 9/5 + 32).toInt()} °F"
+        else -> throw IllegalArgumentException("Unknown unit: $unit")
+    }
+}
+
 fun getFormattedDate(unixTimestamp: Int?): String {
     if (unixTimestamp == null){
         return ""
